@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Raven.Client;
 using Raven.Client.Document;
 using log4net.Appender;
@@ -7,16 +8,13 @@ using log4net.Raven.Entities;
 
 namespace log4net.Raven
 {
-	/// <summary>
-	/// log4net Appender itself
-	/// </summary>
-	public class RavenAppender : AppenderSkeleton
+	public class RavenAppender : BufferingAppenderSkeleton
 	{
-		private readonly object lockObject= new object();
+		private readonly object lockObject = new object();
 
 		private string databaseName = "Logs"; // Default Database Name
 
-		//private int messageCounter = 1; // Default number of log entries to be commited.
+		private DocumentStore documentStore;
 
 		#region Appender configuration properties
 
@@ -34,16 +32,17 @@ namespace log4net.Raven
 
 		public IDocumentSession DocumentSession { get; protected set; }
 
-		protected DocumentStore DocumentStore { get; set; }
-
-		protected override void Append(LoggingEvent loggingEvent)
+		// The number of remote calls to the server per session is limited to 30.
+		protected override void SendBuffer(LoggingEvent[] events)
 		{
 			this.CheckSession();
 
-			var entry = new LogEntry(loggingEvent);
-			this.DocumentSession.Store(entry);
+			foreach (var entry in events.Select(loggingEvent => new LogEntry(loggingEvent)))
+			{
+				this.DocumentSession.Store(entry);
+			}
 
-			this.Commit();
+			//this.Commit();
 		}
 
 		public override void ActivateOptions()
@@ -62,14 +61,21 @@ namespace log4net.Raven
 		{
 			this.Commit();
 
-			if (this.DocumentSession != null)
+			try
 			{
-				this.DocumentSession.Dispose();
-			}
+				if (this.DocumentSession != null)
+				{
+					this.DocumentSession.Dispose();
+				}
 
-			if (this.DocumentStore != null)
+				if (this.documentStore != null && !this.documentStore.WasDisposed)
+				{
+					this.documentStore.Dispose();
+				}
+			}
+			catch (Exception e)
 			{
-				this.DocumentStore.Dispose();
+				ErrorHandler.Error("Exception while initializing Raven Appender", e, ErrorCode.GenericFailure);
 			}
 
 			base.OnClose();
@@ -82,7 +88,14 @@ namespace log4net.Raven
 				return;
 			}
 
-			this.DocumentSession.SaveChanges();
+			try
+			{
+				this.DocumentSession.SaveChanges();
+			}
+			catch (Exception e)
+			{
+				ErrorHandler.Error("Exception while initializing Raven Appender", e, ErrorCode.GenericFailure);
+			}
 		}
 
 		/// <summary>
@@ -105,10 +118,18 @@ namespace log4net.Raven
 			{
 				if (this.DocumentSession != null)
 				{
-					return;
+					if (this.DocumentSession.Advanced.NumberOfRequests > this.DocumentSession.Advanced.MaxNumberOfRequestsPerSession + 2)
+					{
+						this.DocumentSession.SaveChanges();
+						this.DocumentSession.Dispose();
+					}
+					else
+					{
+						return;
+					}
 				}
 
-				this.DocumentSession = this.DocumentStore.OpenSession();
+				this.DocumentSession = this.documentStore.OpenSession();
 				this.DocumentSession.Advanced.UseOptimisticConcurrency = true;
 			}
 		}
@@ -122,7 +143,7 @@ namespace log4net.Raven
 		/// </summary>
 		private void InitServer()
 		{
-			if (this.DocumentStore != null)
+			if (this.documentStore != null)
 			{
 				return;
 			}
@@ -132,14 +153,14 @@ namespace log4net.Raven
 				throw new InvalidOperationException("Connection string is not specified.");
 			}
 
-			this.DocumentStore = new DocumentStore
+			this.documentStore = new DocumentStore
 			{
 				Identifier = this.DatabaseName,
-				//DefaultDatabase = this.DatabaseName,
+				DefaultDatabase = this.DatabaseName,
 				ConnectionStringName = this.ConnectionString
 			};
 
-			this.DocumentStore.Initialize();
+			this.documentStore.Initialize();
 		}
 	}
 }
