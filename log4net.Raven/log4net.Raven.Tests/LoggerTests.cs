@@ -1,5 +1,9 @@
-﻿using NUnit.Framework;
+﻿using System.Collections.Generic;
+using System.Linq;
+using NUnit.Framework;
 using Raven.Client;
+using Raven.Client.Linq;
+using log4net.Raven.Entities;
 
 namespace log4net.Raven.Tests
 {
@@ -9,8 +13,6 @@ namespace log4net.Raven.Tests
 		private ILog log;
 
 		private RavenAppender appender;
-
-		private IDocumentSession documentSession;
 
 		[TestFixtureSetUp]
 		public void TestFixtureSetUp()
@@ -22,10 +24,8 @@ namespace log4net.Raven.Tests
 			var appenders = log.Logger.Repository.GetAppenders();
 			Assert.IsTrue(appenders.Length > 0, "Seems that Raven Appender is not configured");
 
-			appender = appenders[0] as RavenAppender;
+			this.appender = appenders[0] as RavenAppender;
 			Assert.IsNotNull(appender, "Raven Appender is expected to be the only one configured for tests");
-
-			documentSession = appender.DocumentSession;
 		}
 
 		[TestFixtureTearDown]
@@ -38,12 +38,30 @@ namespace log4net.Raven.Tests
 		[Test]
 		public void SmokeLogTest()
 		{
-			log.Info("Log Info");
+			var message = "Log Info";
+
+			log.Info(message);
 		}
 
-		protected void ClearCollection()
+		[Test]
+		public void WarnAndDeleteTest()
 		{
-			//documentSession.
+			var message = "Log Warning";
+
+			log.Warn(message);
+
+			var entries = this.appender.DocumentSession.Query<LogEntry>().Where(le => (string)le.Message == message);
+
+			Assert.That(entries.Any());
+			Assert.That(entries.Count() == 1);
+
+			var entry = entries.First();
+			this.Delete(entry);
+		}
+
+		private void Delete(object entity)
+		{
+			this.appender.DocumentSession.Delete(entity);
 		}
 	}
 }

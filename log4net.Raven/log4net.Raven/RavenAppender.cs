@@ -3,6 +3,7 @@ using Raven.Client;
 using Raven.Client.Document;
 using log4net.Appender;
 using log4net.Core;
+using log4net.Raven.Entities;
 
 namespace log4net.Raven
 {
@@ -134,6 +135,7 @@ namespace log4net.Raven
 			this.DocumentStore = new DocumentStore
 			{
 				Identifier = this.DatabaseName,
+				//DefaultDatabase = this.DatabaseName,
 				ConnectionStringName = this.ConnectionString
 			};
 

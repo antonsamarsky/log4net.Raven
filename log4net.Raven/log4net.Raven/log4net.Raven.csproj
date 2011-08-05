@@ -64,7 +64,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="IDocument.cs" />
-    <Compile Include="LogEntry.cs" />
+    <Compile Include="Entities\LogEntry.cs" />
     <Compile Include="RavenAppender.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

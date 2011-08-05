@@ -2,7 +2,7 @@
 using log4net.Core;
 using log4net.Util;
 
-namespace log4net.Raven
+namespace log4net.Raven.Entities
 {
 	/// <summary>
 	/// The log entry document entity that will be stored to the database.
@@ -36,6 +36,7 @@ namespace log4net.Raven
 
 		public LogEntry(string id, LoggingEvent logEvent) : this(logEvent)
 		{
+			this.Id = id;
 		}
 
 		public DateTime TimeStamp { get; set; }
