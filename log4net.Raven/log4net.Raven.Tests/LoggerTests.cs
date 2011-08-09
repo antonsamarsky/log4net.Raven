@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Linq;
 using NUnit.Framework;
-using Raven.Client.Linq;
-using log4net.Raven.Entities;
 
 namespace log4net.Raven.Tests
 {
@@ -52,7 +49,8 @@ namespace log4net.Raven.Tests
 
 			log.Warn(message);
 
-			var entry = this.appender.DocumentSession.Load<LogEntry>(1);
+			// Get log
+			var entry = this.appender.DocumentSession.Load<Log>(1);
 
 			Assert.AreEqual(entry.Message, message);
 			Assert.AreEqual(entry.LoggerName, this.GetType().FullName);
@@ -65,7 +63,8 @@ namespace log4net.Raven.Tests
 
 			log.Error("I'm sorry", exception);
 
-			var entry = this.appender.DocumentSession.Load<LogEntry>(1);
+			// Get log
+			var entry = this.appender.DocumentSession.Load<Log>(1);
 
 			// verify values
 			Assert.AreEqual(entry.Level, "ERROR", "Exception not logged with ERROR level");
@@ -76,7 +75,7 @@ namespace log4net.Raven.Tests
 
 		private void ClearDatabase()
 		{
-			//this.appender.DocumentSession.Advanced
+			//this.appender.DocumentSession.Advanced.DocumentStore.
 		}
 	}
 }

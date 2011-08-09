@@ -63,8 +63,8 @@
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Log.cs" />
     <Compile Include="IDocument.cs" />
-    <Compile Include="Entities\LogEntry.cs" />
     <Compile Include="RavenAppender.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

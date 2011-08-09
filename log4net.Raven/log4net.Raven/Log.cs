@@ -1,24 +1,24 @@
-﻿using System;
+using System;
 using log4net.Core;
 using log4net.Util;
 
-namespace log4net.Raven.Entities
+namespace log4net.Raven
 {
 	/// <summary>
 	/// The log entry document entity that will be stored to the database.
 	/// </summary>
-	public class LogEntry : INamedDocument
+	public class Log : INamedDocument
 	{
-		public LogEntry()
+		public Log()
 		{
 		}
 
-		public LogEntry(string id)
+		public Log(string id)
 		{
 			this.Id = id;
 		}
 
-		public LogEntry(LoggingEvent logEvent)
+		public Log(LoggingEvent logEvent)
 		{
 			this.LoggerName = logEvent.LoggerName;
 			this.Domain = logEvent.Domain;
@@ -34,7 +34,7 @@ namespace log4net.Raven.Entities
 			this.Exception = logEvent.ExceptionObject;
 		}
 
-		public LogEntry(string id, LoggingEvent logEvent) : this(logEvent)
+		public Log(string id, LoggingEvent logEvent) : this(logEvent)
 		{
 			this.Id = id;
 		}
