@@ -1,1 +1,55 @@
-log4net.Raven in a log4net appender for the RavenDB.
+log4net.Raven
+==============================
+
+A log4net(http://logging.apache.org/log4net) appender implementation using RavenDB(http://ravendb.net).
+
+==============================
+NuGet
+==============================
+
+The easiest way to install is via the NuGet package (http://nuget.org/List/Packages/log4net.Raven).
+
+==============================
+Configuration:
+==============================
+<configuration>
+
+	<configSections>
+		<section name="log4net" type="log4net.Config.Log4NetConfigurationSectionHandler, log4net" />
+	</configSections>
+	
+	<connectionStrings>
+		<add name="RavenLogs" connectionString="Url = http://raven; DefaultDatabase=Logs"/>
+	</connectionStrings>
+	
+	<log4net>
+		<appender name="RavenAppender" type="log4net.Raven.RavenAppender">
+			<filter type="log4net.Filter.LevelRangeFilter">
+				<levelMin value="WARN" />
+				<levelMax value="FATAL" />
+			</filter>
+			<connectionString value="RavenLogs"/>
+			<databaseName value="Log" />
+			<maxNumberOfRequestsPerSession value="100"/>
+			<bufferSize value="50" />
+			<lossy value="true"/>
+			<evaluator type="log4net.Core.LevelEvaluator">
+				<threshold value="ERROR" />
+			</evaluator>
+		</appender>
+		<root>
+			<level value="ALL"/>
+			<appender-ref ref="RavenAppender" />
+		</root>
+	</log4net>
+	
+</configuration>
+
+==============================
+Notes:
+==============================
+Appender implements BufferingAppenderSkeleton.
+
+
+
+

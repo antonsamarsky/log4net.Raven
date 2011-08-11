@@ -7,11 +7,12 @@ using log4net.Core;
 
 namespace log4net.Raven
 {
+	// ToDO: write own implementation of buffered appender using unit of work: document session.
 	public class RavenAppender : BufferingAppenderSkeleton
 	{
 		private readonly object lockObject = new object();
 
-		private string databaseName = "Logs"; // Default Database Name
+		//private string databaseName = "Logs"; // Default Database Name
 
 		private DocumentStore documentStore;
 
@@ -19,11 +20,11 @@ namespace log4net.Raven
 
 		public string ConnectionString { get; set; }
 
-		public string DatabaseName
-		{
-			get { return this.databaseName; }
-			set { this.databaseName = value; }
-		}
+		//public string DatabaseName
+		//{
+		//  get { return this.databaseName; }
+		//  set { this.databaseName = value; }
+		//}
 
 		// By default the number of remote calls to the server per session is limited to 30.
 		public int MaxNumberOfRequestsPerSession { get; set; }
@@ -36,6 +37,11 @@ namespace log4net.Raven
 
 		protected override void SendBuffer(LoggingEvent[] events)
 		{
+			if (events == null || !events.Any())
+			{
+				return;
+			}
+
 			this.InitOrCheckSession();
 
 			foreach (var entry in events.Select(loggingEvent => new Log(loggingEvent)))
@@ -60,6 +66,7 @@ namespace log4net.Raven
 
 		protected override void OnClose()
 		{
+			this.Flush();
 			this.Commit();
 
 			try
@@ -171,8 +178,7 @@ namespace log4net.Raven
 
 				this.documentStore = new DocumentStore
 				{
-					Identifier = this.DatabaseName,
-					//DefaultDatabase = this.DatabaseName,
+					//Identifier = this.DatabaseName,
 					ConnectionStringName = this.ConnectionString
 				};
 
