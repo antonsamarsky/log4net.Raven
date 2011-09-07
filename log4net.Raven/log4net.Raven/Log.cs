@@ -23,8 +23,12 @@ namespace log4net.Raven
 			this.LoggerName = logEvent.LoggerName;
 			this.Domain = logEvent.Domain;
 			this.Identity = logEvent.Identity;
-			this.Level = logEvent.Level;
-			this.LocationInformation = logEvent.LocationInformation;
+			this.Level = logEvent.Level.ToString();
+			this.ClassName = logEvent.LocationInformation.ClassName;
+			this.FileName = logEvent.LocationInformation.FileName;
+			this.LineNumber = logEvent.LocationInformation.LineNumber;
+			this.FullInfo = logEvent.LocationInformation.FullInfo;
+			this.MethodName = logEvent.LocationInformation.MethodName;
 			this.Fix = logEvent.Fix;
 			this.Properties = logEvent.Properties;
 			this.ThreadName = logEvent.ThreadName;
@@ -51,9 +55,17 @@ namespace log4net.Raven
 
 		public string Identity { get; set; }
 
-		public Level Level { get; set; }
+		public string Level { get; set; }
 
-		public LocationInfo LocationInformation { get; set; }
+		public string ClassName { get; set; }
+
+		public string FileName { get; set; }
+
+		public string LineNumber { get; set; }
+
+		public string FullInfo { get; set; }
+
+		public string MethodName { get; set; }
 
 		public FixFlags Fix { get; set; }
 

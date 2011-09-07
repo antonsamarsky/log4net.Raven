@@ -12,24 +12,14 @@ namespace log4net.Raven
 	{
 		private readonly object lockObject = new object();
 
-		//private string databaseName = "Logs"; // Default Database Name
-
 		private DocumentStore documentStore;
 
 		#region Appender configuration properties
 
 		public string ConnectionString { get; set; }
 
-		//public string DatabaseName
-		//{
-		//  get { return this.databaseName; }
-		//  set { this.databaseName = value; }
-		//}
-
 		// By default the number of remote calls to the server per session is limited to 30.
 		public int MaxNumberOfRequestsPerSession { get; set; }
-
-		// public string CollectionName { get; set; }
 
 		#endregion
 
@@ -42,7 +32,7 @@ namespace log4net.Raven
 				return;
 			}
 
-			this.InitOrCheckSession();
+			this.CheckSession();
 
 			foreach (var entry in events.Select(loggingEvent => new Log(loggingEvent)))
 			{
@@ -115,7 +105,7 @@ namespace log4net.Raven
 		/// load data from the database, query the database, save and delete. 
 		/// Instances of this interface implement the Unit of Work pattern and change tracking.
 		/// </summary>
-		private void InitOrCheckSession()
+		private void CheckSession()
 		{
 			if (this.DocumentSession != null)
 			{
@@ -169,21 +159,12 @@ namespace log4net.Raven
 				return;
 			}
 
-			lock (this.lockObject)
+			this.documentStore = new DocumentStore
 			{
-				if (this.DocumentSession != null)
-				{
-					return;
-				}
+				ConnectionStringName = this.ConnectionString
+			};
 
-				this.documentStore = new DocumentStore
-				{
-					//Identifier = this.DatabaseName,
-					ConnectionStringName = this.ConnectionString
-				};
-
-				this.documentStore.Initialize();
-			}
+			this.documentStore.Initialize();
 		}
 	}
 }

@@ -19,20 +19,18 @@ Configuration:
 	</configSections>
 	
 	<connectionStrings>
-		<add name="RavenLogs" connectionString="Url = http://raven; DefaultDatabase=Logs"/>
+		<add name="RavenLogs" connectionString="Url = http://raven; DefaultDatabase=Log"/>
 	</connectionStrings>
 	
 	<log4net>
 		<appender name="RavenAppender" type="log4net.Raven.RavenAppender">
 			<filter type="log4net.Filter.LevelRangeFilter">
-				<levelMin value="WARN" />
+				<levelMin value="INFO" />
 				<levelMax value="FATAL" />
 			</filter>
 			<connectionString value="RavenLogs"/>
-			<databaseName value="Log" />
 			<maxNumberOfRequestsPerSession value="100"/>
 			<bufferSize value="50" />
-			<lossy value="true"/>
 			<evaluator type="log4net.Core.LevelEvaluator">
 				<threshold value="ERROR" />
 			</evaluator>

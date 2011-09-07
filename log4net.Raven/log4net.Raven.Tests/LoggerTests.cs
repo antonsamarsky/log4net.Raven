@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using NUnit.Framework;
 
 namespace log4net.Raven.Tests
@@ -33,24 +34,24 @@ namespace log4net.Raven.Tests
 		[TearDown]
 		public void TearDown()
 		{
-			this.ClearDatabase();
+			this.ClearAllLogs();
 		}
 
 		[Test]
-		public void SmokeLogTest()
+		public void LogInfoTest()
 		{
 			log.Info("Log Info");
 		}
 
 		[Test]
-		public void WarnAndDeleteTest()
+		public void LogAndLoadTest()
 		{
-			var message = "Log Warning";
+			const string message = "Log Warning";
 
 			log.Warn(message);
 
 			// Get log
-			var entry = this.appender.DocumentSession.Load<Log>(1);
+			var entry = this.appender.DocumentSession.Query<Log>().First();
 
 			Assert.AreEqual(entry.Message, message);
 			Assert.AreEqual(entry.LoggerName, this.GetType().FullName);
@@ -61,10 +62,11 @@ namespace log4net.Raven.Tests
 		{
 			var exception = new Exception("Something wrong happened", new Exception("I'm the inner"));
 
-			log.Error("I'm sorry", exception);
+			const string message = "Log Warning";
+			log.Error(message, exception);
 
 			// Get log
-			var entry = this.appender.DocumentSession.Load<Log>(1);
+			var entry = this.appender.DocumentSession.Query<Log>().First(l => (string)l.Message == message);
 
 			// verify values
 			Assert.AreEqual(entry.Level, "ERROR", "Exception not logged with ERROR level");
@@ -73,9 +75,10 @@ namespace log4net.Raven.Tests
 			Assert.AreEqual(exception, exceptionEntry);
 		}
 
-		private void ClearDatabase()
+		private void ClearAllLogs()
 		{
-			//this.appender.DocumentSession.Advanced.DocumentStore.
+			var logs = this.appender.DocumentSession.Query<Log>();
+			logs.ToList().ForEach(l => this.appender.DocumentSession.Delete(l));
 		}
 	}
 }
