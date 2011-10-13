@@ -12,7 +12,7 @@ namespace log4net.Raven
 	{
 		private readonly object lockObject = new object();
 
-		private DocumentStore documentStore;
+		private IDocumentStore documentStore;
 
 		#region Appender configuration properties
 
