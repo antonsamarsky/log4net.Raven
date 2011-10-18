@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>log4net.Raven</id>
+    <version>0.54</version>
+    <authors>Anton Samarskyy</authors>
+    <owners>Anton Samarskyy</owners>
+    <projectUrl>https://github.com/antonsamarsky/log4net.Raven</projectUrl>
+    <iconUrl>http://static.ravendb.net/logo-for-nuget.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>A log4net appender implementation using RavenDB.</description>
+    <releaseNotes>Appender implements BufferingAppenderSkeleton.</releaseNotes>
+    <copyright>Copyright 2011</copyright>
+    <tags>log4net RavenDB</tags>
+    <dependencies>
+	  <dependency id="log4net" version="1.2.10" />
+      <dependency id="RavenDB" version="1.0.0.427" />
+    </dependencies>
+  </metadata>
+</package>
