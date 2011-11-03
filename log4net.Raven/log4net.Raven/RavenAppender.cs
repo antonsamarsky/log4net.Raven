@@ -14,16 +14,28 @@ namespace log4net.Raven
 
 		private IDocumentStore documentStore;
 
+		private IDocumentSession documentSession;
+
 		#region Appender configuration properties
 
+		/// <summary>
+		/// Gets or sets the connection string.
+		/// </summary>
+		/// <value>
+		/// The connection string.
+		/// </value>
 		public string ConnectionString { get; set; }
 
-		// By default the number of remote calls to the server per session is limited to 30.
+		/// <summary>
+		/// Gets or sets the max number of requests per session.
+		/// By default the number of remote calls to the server per session is limited to 30.
+		/// </summary>
+		/// <value>
+		/// The max number of requests per session.
+		/// </value>
 		public int MaxNumberOfRequestsPerSession { get; set; }
 
 		#endregion
-
-		public IDocumentSession DocumentSession { get; protected set; }
 
 		protected override void SendBuffer(LoggingEvent[] events)
 		{
@@ -34,9 +46,9 @@ namespace log4net.Raven
 
 			this.CheckSession();
 
-			foreach (var entry in events.Select(loggingEvent => new Log(loggingEvent)))
+			foreach (var entry in events.Where(e => e != null).Select(e => new Log(e)))
 			{
-				this.DocumentSession.Store(entry);
+				this.documentSession.Store(entry);
 			}
 
 			this.Commit();
@@ -48,9 +60,9 @@ namespace log4net.Raven
 			{
 				this.InitServer();
 			}
-			catch (Exception e)
+			catch (Exception exception)
 			{
-				ErrorHandler.Error("Exception while initializing Raven Appender", e, ErrorCode.GenericFailure);
+				ErrorHandler.Error("Exception while initializing Raven Appender", exception, ErrorCode.GenericFailure);
 			}
 		}
 
@@ -61,9 +73,9 @@ namespace log4net.Raven
 
 			try
 			{
-				if (this.DocumentSession != null)
+				if (this.documentSession != null)
 				{
-					this.DocumentSession.Dispose();
+					this.documentSession.Dispose();
 				}
 
 				if (this.documentStore != null && !this.documentStore.WasDisposed)
@@ -81,14 +93,14 @@ namespace log4net.Raven
 
 		protected virtual void Commit()
 		{
-			if (this.DocumentSession == null)
+			if (this.documentSession == null)
 			{
 				return;
 			}
 
 			try
 			{
-				this.DocumentSession.SaveChanges();
+				this.documentSession.SaveChanges();
 			}
 			catch (Exception e)
 			{
@@ -107,19 +119,19 @@ namespace log4net.Raven
 		/// </summary>
 		private void CheckSession()
 		{
-			if (this.DocumentSession != null)
+			if (this.documentSession != null)
 			{
 				return;
 			}
 
 			lock (this.lockObject)
 			{
-				if (this.DocumentSession != null)
+				if (this.documentSession != null)
 				{
-					if (this.DocumentSession.Advanced.NumberOfRequests >= this.DocumentSession.Advanced.MaxNumberOfRequestsPerSession)
+					if (this.documentSession.Advanced.NumberOfRequests >= this.documentSession.Advanced.MaxNumberOfRequestsPerSession)
 					{
-						this.DocumentSession.SaveChanges();
-						this.DocumentSession.Dispose();
+						this.Commit();
+						this.documentSession.Dispose();
 					}
 					else
 					{
@@ -127,12 +139,12 @@ namespace log4net.Raven
 					}
 				}
 
-				this.DocumentSession = this.documentStore.OpenSession();
-				this.DocumentSession.Advanced.UseOptimisticConcurrency = true;
+				this.documentSession = this.documentStore.OpenSession();
+				this.documentSession.Advanced.UseOptimisticConcurrency = true;
 
 				if (this.MaxNumberOfRequestsPerSession > 0)
 				{
-					this.DocumentSession.Advanced.MaxNumberOfRequestsPerSession = this.MaxNumberOfRequestsPerSession;
+					this.documentSession.Advanced.MaxNumberOfRequestsPerSession = this.MaxNumberOfRequestsPerSession;
 				}
 			}
 		}

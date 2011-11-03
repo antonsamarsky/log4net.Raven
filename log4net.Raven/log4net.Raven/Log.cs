@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using log4net.Core;
 using log4net.Util;
 
@@ -20,6 +22,11 @@ namespace log4net.Raven
 
 		public Log(LoggingEvent logEvent)
 		{
+			if (logEvent == null)
+			{
+				throw new ArgumentNullException("logEvent");
+			}
+
 			this.LoggerName = logEvent.LoggerName;
 			this.Domain = logEvent.Domain;
 			this.Identity = logEvent.Identity;
@@ -29,13 +36,14 @@ namespace log4net.Raven
 			this.LineNumber = logEvent.LocationInformation.LineNumber;
 			this.FullInfo = logEvent.LocationInformation.FullInfo;
 			this.MethodName = logEvent.LocationInformation.MethodName;
-			this.Fix = logEvent.Fix;
-			this.Properties = logEvent.Properties;
 			this.ThreadName = logEvent.ThreadName;
 			this.UserName = logEvent.UserName;
 			this.Message = logEvent.MessageObject;
 			this.TimeStamp = logEvent.TimeStamp;
 			this.Exception = logEvent.ExceptionObject;
+			this.Fix = logEvent.Fix.ToString();
+			// Raven doesn't serialize unknown types like log4net's PropertiesDictionary
+			this.Properties = logEvent.Properties.GetKeys().ToDictionary(key => key, key => logEvent.Properties[key].ToString());
 		}
 
 		public Log(string id, LoggingEvent logEvent) : this(logEvent)
@@ -67,9 +75,9 @@ namespace log4net.Raven
 
 		public string MethodName { get; set; }
 
-		public FixFlags Fix { get; set; }
+		public string Fix { get; set; }
 
-		public PropertiesDictionary Properties { get; set; }
+		public IDictionary<string, string> Properties { get; set; }
 
 		public string UserName { get; set; }
 
