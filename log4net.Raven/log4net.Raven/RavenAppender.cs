@@ -37,6 +37,25 @@ namespace log4net.Raven
 
 		#endregion
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="RavenAppender"/> class.
+		/// </summary>
+		public RavenAppender() {}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="RavenAppender"/> class.
+		/// </summary>
+		/// <param name="documentStore">The document store.</param>
+		public RavenAppender(IDocumentStore documentStore)
+		{
+			if (documentStore == null)
+			{
+				throw new ArgumentNullException("documentStore");
+			}
+
+			this.documentStore = documentStore;
+		}
+
 		protected override void SendBuffer(LoggingEvent[] events)
 		{
 			if (events == null || !events.Any())
@@ -63,7 +82,7 @@ namespace log4net.Raven
 			catch (Exception exception)
 			{
 				ErrorHandler.Error("Exception while initializing Raven Appender", exception, ErrorCode.GenericFailure);
-				throw;
+				// throw;
 			}
 		}
 

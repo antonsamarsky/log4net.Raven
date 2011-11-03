@@ -34,23 +34,34 @@ namespace log4net.Raven
 			this.LoggerName = logEvent.LoggerName;
 			this.Domain = logEvent.Domain;
 			this.Identity = logEvent.Identity;
-			this.Level = logEvent.Level.ToString();
-			this.ClassName = logEvent.LocationInformation.ClassName;
-			this.FileName = logEvent.LocationInformation.FileName;
-			this.LineNumber = logEvent.LocationInformation.LineNumber;
-			this.FullInfo = logEvent.LocationInformation.FullInfo;
-			this.MethodName = logEvent.LocationInformation.MethodName;
 			this.ThreadName = logEvent.ThreadName;
 			this.UserName = logEvent.UserName;
-			this.Message = logEvent.MessageObject;
+			this.MessageObject = logEvent.MessageObject;
 			this.TimeStamp = logEvent.TimeStamp;
 			this.Exception = logEvent.ExceptionObject;
+			this.Message = logEvent.RenderedMessage;
 			this.Fix = logEvent.Fix.ToString();
+
+			if (logEvent.Level != null)
+			{
+				this.Level = logEvent.Level.ToString();
+			}
+
+			if (logEvent.LocationInformation != null)
+			{
+				this.ClassName = logEvent.LocationInformation.ClassName;
+				this.FileName = logEvent.LocationInformation.FileName;
+				this.LineNumber = logEvent.LocationInformation.LineNumber;
+				this.FullInfo = logEvent.LocationInformation.FullInfo;
+				this.MethodName = logEvent.LocationInformation.MethodName;
+			}
+
 			// Raven doesn't serialize unknown types like log4net's PropertiesDictionary
 			this.Properties = logEvent.Properties.GetKeys().ToDictionary(key => key, key => logEvent.Properties[key].ToString());
 		}
 
-		public Log(string id, LoggingEvent logEvent) : this(logEvent)
+		public Log(string id, LoggingEvent logEvent)
+			: this(logEvent)
 		{
 			if (string.IsNullOrEmpty(id))
 			{
@@ -62,7 +73,9 @@ namespace log4net.Raven
 
 		public DateTime TimeStamp { get; set; }
 
-		public object Message { get; set; }
+		public string Message { get; set; }
+
+		public object MessageObject { get; set; }
 
 		public object Exception { get; set; }
 
