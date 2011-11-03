@@ -63,6 +63,7 @@ namespace log4net.Raven
 			catch (Exception exception)
 			{
 				ErrorHandler.Error("Exception while initializing Raven Appender", exception, ErrorCode.GenericFailure);
+				throw;
 			}
 		}
 

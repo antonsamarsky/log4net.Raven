@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using log4net.Core;
-using log4net.Util;
 
 namespace log4net.Raven
 {
@@ -17,6 +16,11 @@ namespace log4net.Raven
 
 		public Log(string id)
 		{
+			if (string.IsNullOrEmpty(id))
+			{
+				throw new ArgumentNullException("id");
+			}
+
 			this.Id = id;
 		}
 
@@ -48,6 +52,11 @@ namespace log4net.Raven
 
 		public Log(string id, LoggingEvent logEvent) : this(logEvent)
 		{
+			if (string.IsNullOrEmpty(id))
+			{
+				throw new ArgumentNullException("id");
+			}
+
 			this.Id = id;
 		}
 
