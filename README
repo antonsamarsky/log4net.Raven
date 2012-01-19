@@ -23,7 +23,7 @@ Configuration:
 	</connectionStrings>
 	
 	<log4net>
-		<appender name="RavenAppender" type="log4net.Raven.RavenAppender">
+		<appender name="RavenAppender" type="log4net.Raven.RavenAppender, log4net.Raven">
 			<filter type="log4net.Filter.LevelRangeFilter">
 				<levelMin value="INFO" />
 				<levelMax value="FATAL" />
