@@ -1,8 +1,9 @@
 *.vs10x
+*.ncrunchsolution
 *.suo
-log4net.Raven/log4net.Raven.Tests/bin
-log4net.Raven/log4net.Raven.Tests/obj
-log4net.Raven/log4net.Raven.sln.docstates.suo
-log4net.Raven/log4net.Raven.6.0.ReSharper.user
-log4net.Raven/log4net.Raven/bin
-log4net.Raven/log4net.Raven/obj
+bin/
+obj/
+*.user
+*.ncrunchproject
+packages/
+*cache
