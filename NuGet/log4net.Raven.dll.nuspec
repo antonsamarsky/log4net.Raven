@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>log4net.Raven</id>
-    <version>0.58</version>
+    <version>0.71</version>
     <authors>Anton Samarskyy</authors>
     <owners>Anton Samarskyy</owners>
     <projectUrl>https://github.com/antonsamarsky/log4net.Raven</projectUrl>
@@ -10,11 +10,11 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>A log4net appender implementation using RavenDB.</description>
     <releaseNotes>Appender implements BufferingAppenderSkeleton.</releaseNotes>
-    <copyright>Copyright 2011</copyright>
+    <copyright>Copyright 2012</copyright>
     <tags>log4net RavenDB</tags>
     <dependencies>
-	  <dependency id="log4net" version="1.2.10" />
-      <dependency id="RavenDB" version="1.0.0.499" />
+	  <dependency id="log4net" version="2.0.0" />
+      <dependency id="RavenDB" version="1.0.701" />
     </dependencies>
   </metadata>
 </package>
