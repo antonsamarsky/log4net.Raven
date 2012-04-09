@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>log4net.Raven</id>
-    <version>0.71</version>
+    <version>0.888</version>
     <authors>Anton Samarskyy</authors>
     <owners>Anton Samarskyy</owners>
     <projectUrl>https://github.com/antonsamarsky/log4net.Raven</projectUrl>
@@ -14,7 +14,7 @@
     <tags>log4net RavenDB</tags>
     <dependencies>
 	  <dependency id="log4net" version="2.0.0" />
-      <dependency id="RavenDB" version="1.0.701" />
+      <dependency id="RavenDB" version="1.0.888" />
     </dependencies>
   </metadata>
 </package>
