@@ -25,6 +25,15 @@ namespace log4net.Raven.Tests
 							RunInMemory = true,
 						}
 				};
+
+			/*
+			// For integration testing
+			this.documentStore = new DocumentStore
+			{
+				Url = "http://raven",
+				DefaultDatabase = "Log"
+			};
+			*/
 			this.documentStore.Initialize();
 
 			this.documentSession = this.documentStore.OpenSession();
@@ -57,7 +66,7 @@ namespace log4net.Raven.Tests
 			var properties = new PropertiesDictionary();
 			properties["key"] = "value";
 
-			var logEvent = new LoggingEvent(new LoggingEventData { Properties = properties});
+			var logEvent = new LoggingEvent(new LoggingEventData { Properties = properties });
 
 			this.appender.DoAppend(logEvent);
 

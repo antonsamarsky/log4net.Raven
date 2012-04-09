@@ -7,3 +7,4 @@ obj/
 *.ncrunchproject
 packages/
 *cache
+log4net.Raven/_ReSharper.log4net.Raven
