@@ -4,13 +4,14 @@ using Raven.Client;
 using Raven.Client.Document;
 using log4net.Appender;
 using log4net.Core;
+using System.Threading.Tasks;
 
 namespace log4net.Raven
 {
 	// ToDO: write own implementation of buffered appender using unit of work: document session.
 	public class RavenAppender : BufferingAppenderSkeleton
 	{
-		private readonly object lockObject = new object();
+		//private readonly object lockObject = new object();
 
 		private IDocumentStore documentStore;
 
@@ -56,22 +57,35 @@ namespace log4net.Raven
 			this.documentStore = documentStore;
 		}
 
-		protected override void SendBuffer(LoggingEvent[] events)
-		{
-			if (events == null || !events.Any())
-			{
-				return;
-			}
+        protected override async void SendBuffer(LoggingEvent[] events)
+        {
+            if (events == null || !events.Any())
+            {
+                return;
+            }
 
-			this.CheckSession();
+            await Task.Run(() =>
+            {
+                try
+                {
+                    
+                    using (IDocumentSession session = this.documentStore.OpenSession())
+                    {
+                        foreach (var entry in events.Where(e => e != null).Select(e => new Log(e)))
+                        {
+                            session.Store(entry);
+                        }
+                        session.SaveChanges();
+                    }
+                }
+                catch (Exception e)
+                {
+                    ErrorHandler.Error("Exception while commiting to the Raven DB", e, ErrorCode.GenericFailure);
+                }
+            });
+        }
 
-			foreach (var entry in events.Where(e => e != null).Select(e => new Log(e)))
-			{
-				this.documentSession.Store(entry);
-			}
-
-			this.Commit();
-		}
+      
 
 		public override void ActivateOptions()
 		{
@@ -89,7 +103,6 @@ namespace log4net.Raven
 		protected override void OnClose()
 		{
 			this.Flush();
-			this.Commit();
 
 			try
 			{
@@ -111,22 +124,7 @@ namespace log4net.Raven
 			base.OnClose();
 		}
 
-		protected virtual void Commit()
-		{
-			if (this.documentSession == null)
-			{
-				return;
-			}
-
-			try
-			{
-				this.documentSession.SaveChanges();
-			}
-			catch (Exception e)
-			{
-				ErrorHandler.Error("Exception while commiting to the Raven DB", e, ErrorCode.GenericFailure);
-			}
-		}
+		
 
 		/// <summary>
 		/// IDocumentSession - Instances of this interface are created by the DocumentStore, 
@@ -137,37 +135,37 @@ namespace log4net.Raven
 		/// load data from the database, query the database, save and delete. 
 		/// Instances of this interface implement the Unit of Work pattern and change tracking.
 		/// </summary>
-		private void CheckSession()
-		{
-			if (this.documentSession != null)
-			{
-				return;
-			}
+        //private void CheckSession()
+        //{
+        //    if (this.documentSession != null)
+        //    {
+        //        return;
+        //    }
 
-			lock (this.lockObject)
-			{
-				if (this.documentSession != null)
-				{
-					if (this.documentSession.Advanced.NumberOfRequests >= this.documentSession.Advanced.MaxNumberOfRequestsPerSession)
-					{
-						this.Commit();
-						this.documentSession.Dispose();
-					}
-					else
-					{
-						return;
-					}
-				}
+        //    lock (this.lockObject)
+        //    {
+        //    if (this.documentSession != null)
+        //    {
+        //        if (this.documentSession.Advanced.NumberOfRequests >= this.documentSession.Advanced.MaxNumberOfRequestsPerSession)
+        //        {
+        //            this.Commit();
+        //            this.documentSession.Dispose();
+        //        }
+        //        else
+        //        {
+        //            return;
+        //        }
+        //    }
 
-				this.documentSession = this.documentStore.OpenSession();
-				this.documentSession.Advanced.UseOptimisticConcurrency = true;
+        //    this.documentSession = this.documentStore.OpenSession();
+        //    this.documentSession.Advanced.UseOptimisticConcurrency = true;
 
-				if (this.MaxNumberOfRequestsPerSession > 0)
-				{
-					this.documentSession.Advanced.MaxNumberOfRequestsPerSession = this.MaxNumberOfRequestsPerSession;
-				}
-			}
-		}
+        //    if (this.MaxNumberOfRequestsPerSession > 0)
+        //    {
+        //        this.documentSession.Advanced.MaxNumberOfRequestsPerSession = this.MaxNumberOfRequestsPerSession;
+        //    }
+        //    }
+        //}
 
 		/// <summary>
 		/// IDocumentStore - This is expensive to create, 
