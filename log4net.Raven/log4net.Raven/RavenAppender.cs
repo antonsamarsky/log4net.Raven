@@ -11,11 +11,8 @@ namespace log4net.Raven
 	// ToDO: write own implementation of buffered appender using unit of work: document session.
 	public class RavenAppender : BufferingAppenderSkeleton
 	{
-		//private readonly object lockObject = new object();
 
 		private IDocumentStore documentStore;
-
-		private IDocumentSession documentSession;
 
 		#region Appender configuration properties
 
@@ -106,10 +103,6 @@ namespace log4net.Raven
 
 			try
 			{
-				if (this.documentSession != null)
-				{
-					this.documentSession.Dispose();
-				}
 
 				if (this.documentStore != null && !this.documentStore.WasDisposed)
 				{
@@ -124,48 +117,6 @@ namespace log4net.Raven
 			base.OnClose();
 		}
 
-		
-
-		/// <summary>
-		/// IDocumentSession - Instances of this interface are created by the DocumentStore, 
-		/// they are cheap to create and not thread safe. 
-		/// If an exception is thrown by an IDocumentSession method, 
-		/// the behavior of all of the methods (except Dispose) is undefined.
-		/// The document session is used to interact with the Raven database, 
-		/// load data from the database, query the database, save and delete. 
-		/// Instances of this interface implement the Unit of Work pattern and change tracking.
-		/// </summary>
-        //private void CheckSession()
-        //{
-        //    if (this.documentSession != null)
-        //    {
-        //        return;
-        //    }
-
-        //    lock (this.lockObject)
-        //    {
-        //    if (this.documentSession != null)
-        //    {
-        //        if (this.documentSession.Advanced.NumberOfRequests >= this.documentSession.Advanced.MaxNumberOfRequestsPerSession)
-        //        {
-        //            this.Commit();
-        //            this.documentSession.Dispose();
-        //        }
-        //        else
-        //        {
-        //            return;
-        //        }
-        //    }
-
-        //    this.documentSession = this.documentStore.OpenSession();
-        //    this.documentSession.Advanced.UseOptimisticConcurrency = true;
-
-        //    if (this.MaxNumberOfRequestsPerSession > 0)
-        //    {
-        //        this.documentSession.Advanced.MaxNumberOfRequestsPerSession = this.MaxNumberOfRequestsPerSession;
-        //    }
-        //    }
-        //}
 
 		/// <summary>
 		/// IDocumentStore - This is expensive to create, 
