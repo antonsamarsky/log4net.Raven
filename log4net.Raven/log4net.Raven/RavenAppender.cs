@@ -17,6 +17,7 @@ namespace log4net.Raven
 
         private IDocumentSession documentSession;
 
+        private readonly object lockObject = new object();
 
         #region Appender configuration properties
 
@@ -65,19 +66,20 @@ namespace log4net.Raven
                 return;
             }
 
+            CheckSession();
+
+            var logsEvents = events.Where(e => e != null).Select(e => new Log(e));
+
             await Task.Run(() =>
             {
                 try
                 {
-
-                    using (documentSession = this.documentStore.OpenSession())
+                    Parallel.ForEach(logsEvents, (entry) =>
                     {
-                        foreach (var entry in events.Where(e => e != null).Select(e => new Log(e)))
-                        {
-                            documentSession.Store(entry);
-                        }
-                        documentSession.SaveChanges();
-                    }
+                        documentSession.Store(entry);
+                    });
+                    documentSession.SaveChanges();
+
                 }
                 catch (Exception e)
                 {
@@ -104,19 +106,24 @@ namespace log4net.Raven
 
         protected override void OnClose()
         {
-            this.Flush();
 
-            try
+            lock (lockObject)
             {
-                
-                if (documentSession != null && documentSession.Advanced.HasChanges)
+                if (this.documentSession != null)
                 {
                     while (documentSession.Advanced.HasChanges)
                     {
                         Thread.Sleep(500);
                     }
-                }
 
+                    this.documentSession.Dispose();
+                }
+            }
+
+            this.Flush();
+
+            try
+            {
                 if (this.documentStore != null && !this.documentStore.WasDisposed)
                 {
                     this.documentStore.Dispose();
@@ -164,6 +171,42 @@ namespace log4net.Raven
             }.Initialize();
 
             return store;
+        }
+
+        /// <summary>
+        /// IDocumentSession - Instances of this interface are created by the DocumentStore, 
+        /// they are cheap to create and not thread safe. 
+        /// If an exception is thrown by an IDocumentSession method, 
+        /// the behavior of all of the methods (except Dispose) is undefined.
+        /// The document session is used to interact with the Raven database, 
+        /// load data from the database, query the database, save and delete. 
+        /// Instances of this interface implement the Unit of Work pattern and change tracking.
+        /// </summary>
+        private void CheckSession()
+        {
+
+            if (this.documentSession != null)
+            {
+                if (this.documentSession.Advanced.NumberOfRequests >= this.documentSession.Advanced.MaxNumberOfRequestsPerSession)
+                {
+                    this.documentSession.Dispose();
+                }
+                return;
+            }
+
+
+            lock (this.lockObject)
+            {
+
+
+                this.documentSession = this.documentStore.OpenSession();
+                this.documentSession.Advanced.UseOptimisticConcurrency = true;
+
+                if (this.MaxNumberOfRequestsPerSession > 0)
+                {
+                    this.documentSession.Advanced.MaxNumberOfRequestsPerSession = this.MaxNumberOfRequestsPerSession;
+                }
+            }
         }
     }
 }
