@@ -8,3 +8,4 @@ obj/
 packages/
 *cache
 log4net.Raven/_ReSharper.log4net.Raven
+log4net.Raven.csproj.vspscc
